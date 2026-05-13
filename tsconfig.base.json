@@ -16,7 +16,7 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["packages/shared/src/*"]
+      "@glasses-tryon/shared": ["packages/shared/src/index.ts"]
     }
   },
   "exclude": ["node_modules"]
