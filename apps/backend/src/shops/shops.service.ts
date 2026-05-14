@@ -7,39 +7,39 @@ export class ShopsService {
   constructor(private supabaseService: SupabaseService) {}
 
   async findAll(): Promise<Shop[]> {
-    const { data, error } = await this.supabaseService
+    const result = await this.supabaseService
       .getClient()
       .from('shops')
       .select('*');
 
-    if (error) throw error;
-    return data;
+    if (result.error) throw result.error;
+    return result.data as Shop[];
   }
 
   async findOneBySlug(slug: string): Promise<Shop> {
-    const { data, error } = await this.supabaseService
+    const result = await this.supabaseService
       .getClient()
       .from('shops')
       .select('*')
       .eq('slug', slug)
       .single();
 
-    if (error || !data) {
+    if (result.error || !result.data) {
       throw new NotFoundException(`Shop with slug "${slug}" not found`);
     }
 
-    return data;
+    return result.data as Shop;
   }
 
   async create(shopData: Partial<Shop>): Promise<Shop> {
-    const { data, error } = await this.supabaseService
+    const result = await this.supabaseService
       .getClient()
       .from('shops')
       .insert([shopData])
       .select()
       .single();
 
-    if (error) throw error;
-    return data;
+    if (result.error) throw result.error;
+    return result.data as Shop;
   }
 }
