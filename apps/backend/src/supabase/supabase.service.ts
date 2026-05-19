@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { WebSocketLikeConstructor } from '@supabase/realtime-js';
+import WebSocket from 'ws';
 
 @Injectable()
 export class SupabaseService {
@@ -14,7 +16,11 @@ export class SupabaseService {
       throw new Error('Supabase credentials are not provided');
     }
 
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+    this.supabase = createClient(supabaseUrl, supabaseKey, {
+      realtime: {
+        transport: WebSocket as unknown as WebSocketLikeConstructor,
+      },
+    });
   }
 
   getClient(): SupabaseClient {
