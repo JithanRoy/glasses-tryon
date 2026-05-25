@@ -5,11 +5,16 @@ import { AppModule } from './app.module';
 const routes = [
   ['GET', '/', 'Check if the backend is running'],
   ['GET', '/shops', 'Get all shops'],
+  ['GET', '/shops/:slug/catalog', 'Get shop details with active glasses'],
   ['GET', '/shops/:slug', 'Get one shop by slug'],
   ['POST', '/shops', 'Create a new shop'],
+  ['PATCH', '/shops/:id', 'Update a shop'],
+  ['DELETE', '/shops/:id', 'Delete a shop'],
   ['GET', '/products?shopId={shopId}', 'Get active glasses for a shop'],
   ['GET', '/products/:id', 'Get one glasses product by ID'],
   ['POST', '/products', 'Create a new glasses product'],
+  ['PATCH', '/products/:id', 'Update a glasses product'],
+  ['DELETE', '/products/:id', 'Delete a glasses product'],
 ];
 
 async function bootstrap() {

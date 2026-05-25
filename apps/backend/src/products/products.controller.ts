@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
@@ -20,9 +29,18 @@ export class ProductsController {
     example: '00000000-0000-0000-0000-000000000000',
     description: 'Shop UUID used to filter products',
   })
+  @ApiQuery({
+    name: 'includeInactive',
+    required: false,
+    example: 'true',
+    description: 'Set true for admin views that need inactive products too',
+  })
   @Get()
-  async findAll(@Query('shopId') shopId: string): Promise<Glasses[]> {
-    return this.productsService.findAllByShop(shopId);
+  async findAll(
+    @Query('shopId') shopId: string,
+    @Query('includeInactive') includeInactive?: string,
+  ): Promise<Glasses[]> {
+    return this.productsService.findAllByShop(shopId, includeInactive === 'true');
   }
 
   @ApiOperation({ summary: 'Get one glasses product by ID' })
@@ -55,5 +73,30 @@ export class ProductsController {
   @Post()
   async create(@Body() productData: Partial<Glasses>): Promise<Glasses> {
     return this.productsService.create(productData);
+  }
+
+  @ApiOperation({ summary: 'Update a glasses product' })
+  @ApiParam({
+    name: 'id',
+    example: '00000000-0000-0000-0000-000000000000',
+    description: 'Glasses product UUID',
+  })
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() productData: Partial<Glasses>,
+  ): Promise<Glasses> {
+    return this.productsService.update(id, productData);
+  }
+
+  @ApiOperation({ summary: 'Delete a glasses product' })
+  @ApiParam({
+    name: 'id',
+    example: '00000000-0000-0000-0000-000000000000',
+    description: 'Glasses product UUID',
+  })
+  @Delete(':id')
+  async remove(@Param('id') id: string): Promise<{ deleted: true }> {
+    return this.productsService.remove(id);
   }
 }

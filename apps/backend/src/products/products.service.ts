@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { Glasses } from '@glasses-tryon/shared';
 
@@ -46,13 +46,21 @@ const toGlassesRow = (g: Partial<Glasses>): Partial<GlassesRow> => ({
 export class ProductsService {
   constructor(private supabaseService: SupabaseService) {}
 
-  async findAllByShop(shopId: string): Promise<Glasses[]> {
-    const result = await this.supabaseService
+  async findAllByShop(
+    shopId: string,
+    includeInactive = false,
+  ): Promise<Glasses[]> {
+    let query = this.supabaseService
       .getClient()
       .from('glasses')
       .select('*')
-      .eq('shop_id', shopId)
-      .eq('is_active', true);
+      .eq('shop_id', shopId);
+
+    if (!includeInactive) {
+      query = query.eq('is_active', true);
+    }
+
+    const result = await query;
 
     if (result.error) throw result.error;
     return (result.data as GlassesRow[]).map(toGlasses);
@@ -66,7 +74,10 @@ export class ProductsService {
       .eq('id', id)
       .single();
 
-    if (result.error) throw result.error;
+    if (result.error || !result.data) {
+      throw new NotFoundException(`Product with id "${id}" not found`);
+    }
+
     return toGlasses(result.data as GlassesRow);
   }
 
@@ -80,5 +91,34 @@ export class ProductsService {
 
     if (result.error) throw result.error;
     return toGlasses(result.data as GlassesRow);
+  }
+
+  async update(id: string, productData: Partial<Glasses>): Promise<Glasses> {
+    const result = await this.supabaseService
+      .getClient()
+      .from('glasses')
+      .update(toGlassesRow(productData))
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (result.error || !result.data) {
+      throw new NotFoundException(`Product with id "${id}" not found`);
+    }
+
+    return toGlasses(result.data as GlassesRow);
+  }
+
+  async remove(id: string): Promise<{ deleted: true }> {
+    const existing = await this.findOne(id);
+    const result = await this.supabaseService
+      .getClient()
+      .from('glasses')
+      .delete()
+      .eq('id', existing.id);
+
+    if (result.error) throw result.error;
+
+    return { deleted: true };
   }
 }
